@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 早餐抽卡系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-single {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-ten {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-area {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: cardAppear 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotateY(180deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shine 2s infinite;
+        }
+
+        .card-rarity {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .card-rarity.N {
+            background: linear-gradient(135deg, #bdc3c7, #95a5a6);
+            color: white;
+        }
+
+        .card-rarity.R {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .card-rarity.SR {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        .card-rarity.SSR {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            animation: glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px #f39c12, 0 0 20px #f39c12; }
+            50% { box-shadow: 0 0 20px #f39c12, 0 0 40px #f39c12; }
+        }
+
+        .card-emoji {
+            font-size: 5em;
+            text-align: center;
+            margin: 20px 0;
+            animation: bounce 1s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .card-name {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .card-desc {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .card-comment {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            color: #888;
+        }
+
+        .ten-pull-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mini-card {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            font-size: 0.8em;
+            text-align: center;
+            animation: miniCardAppear 0.3s ease forwards;
+            opacity: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes miniCardAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.5) rotateY(180deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        .mini-card.N { background: linear-gradient(135deg, #bdc3c7, #95a5a6); }
+        .mini-card.R { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .mini-card.SR { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .mini-card.SSR {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            animation: glow 1.5s ease-in-out infinite;
+        }
+
+        .mini-card .emoji { font-size: 2em; }
+        .mini-card .name {
+            font-size: 0.7em;
+            color: white;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 15px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .recommendation h3 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .recommendation p {
+            font-size: 1.2em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #ccc;
+            padding: 50px;
+            font-size: 1.2em;
+        }
+
+        .placeholder-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .menu-toggle {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .menu-toggle button {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .menu-panel {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 15px;
+        }
+
+        .menu-panel.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-section {
+            margin-bottom: 15px;
+        }
+
+        .menu-section h4 {
+            margin-bottom: 10px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .menu-section h4.N { background: #95a5a6; }
+        .menu-section h4.R { background: #2980b9; }
+        .menu-section h4.SR { background: #8e44ad; }
+        .menu-section h4.SSR { background: #e67e22; }
+
+        .menu-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .menu-item {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border-radius: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎰 早餐抽卡系统</h1>
+        <p class="subtitle">今天早餐吃什么？让命运决定！</p>
+
+        <div class="button-group">
+            <button class="btn btn-single" onclick="singlePull()">✨ 单抽</button>
+            <button class="btn btn-ten" onclick="tenPull()">🎲 十连抽</button>
+        </div>
+
+        <div class="result-area" id="resultArea">
+            <div class="placeholder">
+                <div class="placeholder-icon">🍽️</div>
+                <p>点击抽卡按钮开始</p>
+            </div>
+        </div>
+
+        <div class="menu-toggle">
+            <button onclick="toggleMenu()">📋 查看菜单</button>
+        </div>
+
+        <div class="menu-panel" id="menuPanel">
+            <div id="menuContent"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">抽卡次数</div>
+                <div class="stat-value" id="totalPulls">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">SSR获得</div>
+                <div class="stat-value" id="ssrCount">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">SSR率</div>
+                <div class="stat-value" id="ssrRate">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menu = {
+            N: [
+                { name: "豆浆油条", emoji: "🥯", desc: "经典组合，朴实无华" },
+                { name: "白粥配咸菜", emoji: "🥣", desc: "清淡养胃" },
+                { name: "馒头配鸡蛋", emoji: "🥚", desc: "简单满足" },
+                { name: "包子", emoji: "🥟", desc: "皮薄馅大" },
+                { name: "烧饼", emoji: "🫓", desc: "香脆可口" }
+            ],
+            R: [
+                { name: "小笼包", emoji: "🥟", desc: "汤汁鲜美，一口入魂" },
+                { name: "牛肉面", emoji: "🍜", desc: "汤浓面劲，能量满满" },
+                { name: "煎饼果子", emoji: "🌯", desc: "加两个蛋！" },
+                { name: "馄饨", emoji: "🥣", desc: "皮薄馅嫩，汤鲜味美" },
+                { name: "豆腐脑", emoji: "🍮", desc: "咸甜之争，你选哪边" }
+            ],
+            SR: [
+                { name: "广式早茶", emoji: "🍵", desc: "虾饺烧卖叉烧包，精致生活" },
+                { name: "日式拉面", emoji: "🍜", desc: "豚骨汤底，浓郁醇厚" },
+                { name: "韩式石锅拌饭", emoji: "🍚", desc: "营养丰富，滋滋作响" },
+                { name: "法式可颂", emoji: "🥐", desc: "外酥内软，层次分明" },
+                { name: "意式帕尼尼", emoji: "🥪", desc: "热压三明治，芝士拉丝" }
+            ],
+            SSR: [
+                { name: "海鲜自助早餐", emoji: "🦞", desc: "帝王蟹、三文鱼、生蚝通通拿下！" },
+                { name: "米其林早餐", emoji: "⭐", desc: "大厨精心烹饪，尊贵体验" },
+                { name: "和牛牛排早餐", emoji: "🥩", desc: "A5和牛，入口即化" },
+                { name: "豪华酒店早午餐", emoji: "🏨", desc: "香槟+龙虾+无限续杯" },
+                { name: "妈妈亲手做的早餐", emoji: "❤️", desc: "世界上最温暖的味道" }
+            ]
+        };
+
+        const probability = { N: 50, R: 30, SR: 15, SSR: 5 };
+        const comments = {
+            N: "💭 朴实的一天，从简单的早餐开始~",
+            R: "💭 不错的选择！今天会有好心情~",
+            SR: "💭 运气不错！今天要吃顿好的！",
+            SSR: "💭 天啊！欧皇附体！今天太幸运了！"
+        };
+
+        let stats = { total: 0, ssr: 0 };
+
+        function rollRarity() {
+            const rand = Math.random() * 100;
+            let cumulative = 0;
+
+            for (const [rarity, prob] of Object.entries(probability)) {
+                cumulative += prob;
+                if (rand <= cumulative) return rarity;
+            }
+            return 'N';
+        }
+
+        function draw() {
+            const rarity = rollRarity();
+            const items = menu[rarity];
+            return { ...items[Math.floor(Math.random() * items.length)], rarity };
+        }
+
+        function updateStats() {
+            document.getElementById('totalPulls').textContent = stats.total;
+            document.getElementById('ssrCount').textContent = stats.ssr;
+            document.getElementById('ssrRate').textContent =
+                stats.total > 0 ? ((stats.ssr / stats.total) * 100).toFixed(1) + '%' : '0%';
+        }
+
+        function showLoading() {
+            document.getElementById('resultArea').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>🎰 抽卡中...</p>
+                </div>
+            `;
+        }
+
+        function showCard(item, delay = 0) {
+            setTimeout(() => {
+                document.getElementById('resultArea').innerHTML = `
+                    <div class="card">
+                        <div class="card-rarity ${item.rarity}">【${item.rarity}】</div>
+                        <div class="card-emoji">${item.emoji}</div>
+                        <div class="card-name">${item.name}</div>
+                        <div class="card-desc">${item.desc}</div>
+                        <div class="card-comment">${comments[item.rarity]}</div>
+                    </div>
+                `;
+            }, delay);
+        }
+
+        function singlePull() {
+            showLoading();
+            stats.total++;
+            const item = draw();
+            if (item.rarity === 'SSR') stats.ssr++;
+
+            showCard(item, 800);
+            updateStats();
+        }
+
+        function tenPull() {
+            showLoading();
+
+            setTimeout(() => {
+                const results = [];
+                for (let i = 0; i < 10; i++) {
+                    const item = draw();
+                    results.push(item);
+                    stats.total++;
+                    if (item.rarity === 'SSR') stats.ssr++;
+                }
+
+                // 找出最稀有的
+                const rarityOrder = { SSR: 4, SR: 3, R: 2, N: 1 };
+                const best = results.reduce((a, b) =>
+                    rarityOrder[a.rarity] > rarityOrder[b.rarity] ? a : b
+                );
+
+                let html = '<div class="ten-pull-grid">';
+                results.forEach((item, index) => {
+                    html += `
+                        <div class="mini-card ${item.rarity}" style="animation-delay: ${index * 0.1}s">
+                            <div class="emoji">${item.emoji}</div>
+                            <div class="name">${item.name}</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                html += `
+                    <div class="recommendation">
+                        <h3>🎯 推荐今天吃</h3>
+                        <p>${best.emoji} ${best.name}</p>
+                        <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.9;">${best.desc}</p>
+                    </div>
+                `;
+
+                document.getElementById('resultArea').innerHTML = html;
+                updateStats();
+            }, 800);
+        }
+
+        function toggleMenu() {
+            const panel = document.getElementById('menuPanel');
+            const content = document.getElementById('menuContent');
+
+            if (panel.classList.contains('show')) {
+                panel.classList.remove('show');
+            } else {
+                if (!content.innerHTML) {
+                    let html = '';
+                    for (const [rarity, items] of Object.entries(menu)) {
+                        html += `
+                            <div class="menu-section">
+                                <h4 class="${rarity}">【${rarity}】${getRarityName(rarity)}</h4>
+                                <div class="menu-items">
+                                    ${items.map(item => `
+                                        <div class="menu-item">${item.emoji} ${item.name}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    content.innerHTML = html;
+                }
+                panel.classList.add('show');
+            }
+        }
+
+        function getRarityName(rarity) {
+            const names = { N: '普通', R: '稀有', SR: '史诗', SSR: '传说' };
+            return names[rarity];
+        }
+
+        // 初始化菜单
+        updateStats();
+    </script>
+</body>
+</html>
